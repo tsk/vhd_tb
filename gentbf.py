@@ -76,13 +76,7 @@ def _xls_file(vhdl_file, recreate_file = False):
                 sheet.write(0,i,port+'('+`pdic[port][2]`+')')
                 i+=1
         #Get Vector Size
-        period = "\n"
-        genclk = ""
-        for clk in clk_source:
-            period += "constant PERIOD_"+clk+" : time:= 100 ns;\n"
-            clk_c = clkgt.replace("<clk>",clk)
-            clk_c = clk_c.replace("<PERIOD>","PERIOD_"+clk)
-            genclk += clk_c
+        genclk,period = _get_genclk(clk_source)
         vsize = 0
         for port in pdic:
             if pdic[port][1] in ("in","IN") and port not in clk_source:
@@ -178,13 +172,7 @@ def _ods_file(vhdl_file, recreate_file = False):
                 doc.set_cell_value(i, 1, "string", port+'('+`pdic[port][2]`+')')
                 i+=1
         #Get Vector Size
-        period = "\n"
-        genclk = ""
-        for clk in clk_source:
-            period += "constant PERIOD_"+clk+" : time:= 100 ns;\n"
-            clk_c = clkgt.replace("<clk>",clk)
-            clk_c = clk_c.replace("<PERIOD>","PERIOD_"+clk)
-            genclk += clk_c
+        genclk,period = _get_genclk(clk_source)
         vsize = 0
         for port in pdic:
             if pdic[port][1] in ("in","IN") and port not in clk_source:
@@ -322,17 +310,28 @@ def _get_clock_sources(buf, pdic):
     clk_s = list(set(clk_s))
     return clk_s
 
+def _get_genclk(clk_source):
+    genclk = ""
+    period = "\n"
+    for clk in clk_source:
+        t = raw_input("Set PERIOD for "+clk+" :")
+        period += "constant PERIOD_"+clk+" : time:= "+t+";\n"
+        clk_c = clkgt.replace("<clk>",clk)
+        clk_c = clk_c.replace("<PERIOD>","PERIOD_"+clk)
+        genclk += clk_c
+    return genclk, period
+
 command_dic = {"xls": _xls_file,
                "ods": _ods_file,
                "py": _python_script,
-               "c": _c_program,
-               "cpp": _cpp_program,
-               "cpp_stl": _cpp_stl_program,
-               "pas": _pascal_program
-               "f": _fortran_program
-               "oct": _octave_script,
-               "manual":_manual_tb,
-               "custom": _custom,
+               #"c": _c_program,
+               #"cpp": _cpp_program,
+               #"cpp_stl": _cpp_stl_program,
+               #"pas": _pascal_program,
+               #"f": _fortran_program,
+               #"oct": _octave_script,
+               #"manual":_manual_tb,
+               #"custom": _custom,
               }
 
 def project_options(argv):
