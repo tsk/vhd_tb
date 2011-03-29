@@ -107,7 +107,7 @@ def _xls_file(vhdl_file, recreate_file = False):
         f.write(tb_f)
         f.close()
         doc.save(tb_name+".xls")
-        print "Edit the Test Bench Source File and re run this command"
+        print "Edit the Test Bench Source File and rerun this command"
 
 def _gen_table_from_xls(tb_fname,vhdl_file):
     import xlrd
@@ -204,7 +204,7 @@ def _ods_file(vhdl_file, recreate_file = False):
         f.write(tb_f)
         f.close()
         doc.save(tb_name+".ods")
-        print "Edit the Test Bench Source File and re run this command"
+        print "Edit the Test Bench Source File and rerun this command"
 
 def _gen_table_from_ods(tb_fname,vhdl_file):
     doc = ooolib.Calc(opendoc = tb_fname)
@@ -304,6 +304,7 @@ def _python_script(vhdl_file, recreate_file = False):
         print "Edit the Test Bench Source File and re run this command"
 
 def _get_clock_sources(buf, pdic):
+    #TODO: Add 'event and ...
     exp = "[rising|falling]_edge\((.*?)\)"
     r = re.compile(exp, re.I)
     clk_s = r.findall(buf)
@@ -354,8 +355,3 @@ def project_options(argv):
         if o in ("-r","--recreate_file"):
             replace=True
     command_dic[tb_i_format](vhdl_file,replace)
-
-
-
-if __name__ == "__main__":
-    project_options(sys.argv[1:])
