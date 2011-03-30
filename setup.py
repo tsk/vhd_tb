@@ -6,6 +6,6 @@ setup(name="vhd_tb",
       author ="Alejandro Armagnac",
       author_email = "aarmagnac@yahoo.com.mx",
       license="GPL",
-      scripts=["vhd_tb/bin/gentbf.py"],
+      scripts=["vhd_tb/bin/gentbf.py","vhd_tb/bin/isolate_vfile.py"],
       packages=["vhd_tb"]
 )

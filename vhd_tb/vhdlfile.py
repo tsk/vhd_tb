@@ -62,6 +62,13 @@ class vhdlfile:
             type_ = r.findall(port[1])[0].strip()
             for Name in Names:
                 self.__pdic[Name.strip()] =(type_,pdir,size_)
+        #Get Declared modules
+	self.__smodules = [] 
+	exp = "component(.+?)is"
+	r = re.compile(exp,re.I)
+	l = r.findall(Buffer)
+	for module in l:
+	    self.__smodules.append(module.strip())
 
     def get_name(self):
         return self.name_
@@ -88,8 +95,11 @@ class vhdlfile:
                 ft = ''
                 direction = data[1]
                 if size > 1:
-                    ft = "({0} downto 0)".format(size-1)
-                c+="\t{0}: {1} {2} {3}".format(port,direction,type_,ft)+(";")*(i<l-1)+"\n"
+                    ft = "(%s downto 0)" % `size-1`
+		#Not work in python 2.4
+                #c+="\t{0}: {1} {2} {3}".format(port,direction,type_,ft)+(";")*(i<l-1)+"\n"
+		c+= "\t%s: %s %s %s" %(port,direction,type_,ft)
+		c+=(";")*(i<l-1)+"\n"
                 i += 1
             c+=");"
         return c
@@ -104,8 +114,8 @@ class vhdlfile:
                 type_ = data[0]
                 ft = ''
                 if size > 1:
-                    ft = "({0} downto 0)".format(size-1)
-                c+="signal {0}: {1} {2};\n".format(port,type_,ft)
+                    ft = "(%s downto 0)" % `size-1`
+                c+="signal %s: %s %s;\n" % (port,type_,ft)
         return c
 
     def gen_instance(self, iname):
@@ -115,8 +125,11 @@ class vhdlfile:
             c="port map(\n"
             i = 0
             for port in self.__pdic:
-                c+="\t{0} => {0}".format(port)+(",")*(i<l-1)+"\n"
+                c+="\t%s => %s" %(port,port)
+		c+= (",")*(i<l-1)+"\n"
                 i += 1
             c+=");"
         return c
 
+    def get_submodules(self):
+        return self.__smodules	

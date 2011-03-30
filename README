@@ -1,6 +1,5 @@
 
-
-python gentbf -i <vhdl_file>.vhd -f ods
+gentbf.py -i <vhdl_file>.vhd -f ods
 
 tb_<vhdl_file>.vhd
 tb_<vhdl_file>.ods
@@ -8,4 +7,6 @@ tb_<vhdl_file>.ods
 Edit tb_<vhdl_file>.ods (or xls) and repeate the last command. Another file was created
 tb_<vhdl_file>.tbl
 
-At this time only ods al xls are supported, 
+isolate_vfile.py -i <vhdl_file> [-p path]
+
+copy the input file and its submodules to a new or a given path
