@@ -32,7 +32,3 @@ def get_related_files(file, submodules, files_in_dir,dst):
 	if modname in submodules:
 	    shutil.copy(f,dst)
 	    get_related_files(f,fvhd.get_submodules(),files_in_dir,dst)
-
-if __name__ == "__main__":
-    extract_file_tree("mac.vhd","prueba")
-
