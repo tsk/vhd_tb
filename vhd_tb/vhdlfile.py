@@ -120,9 +120,9 @@ class vhdlfile:
 
     def gen_instance(self, iname):
         l = len(self.__pdic)
-        c=""
+        c=iname+":"+self.name_+"\n"
         if l>0:
-            c="port map(\n"
+            c+="port map(\n"
             i = 0
             for port in self.__pdic:
                 c+="\t%s => %s" %(port,port)
