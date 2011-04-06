@@ -31,6 +31,60 @@ def get_commands():
 
     return _commands
 
+class LaxOptionParser(OptionParser):                                                 
+    """                                                                              
+    An option parser that doesn't raise any errors on unknown options.               
+                                                                                     
+    This is needed because the --settings and --pythonpath options affect            
+    the commands (and thus the options) that are available to the user.              
+    """                                                                              
+    def error(self, msg):                                                            
+        pass                                                                         
+                                                                                     
+    def print_help(self):                                                            
+        """Output nothing.                                                           
+                                                                                     
+        The lax options are included in the normal option parser, so under           
+        normal usage, we don't need to print the lax options.                        
+        """                                                                          
+        pass                                                                         
+                                                                                     
+    def print_lax_help(self):                                                        
+        """Output the basic options available to every command.                      
+                                                                                     
+        This just redirects to the default print_help() behaviour.                   
+        """                                                                          
+        OptionParser.print_help(self)                                                
+                                                                                     
+    def _process_args(self, largs, rargs, values):                                   
+        """                                                                          
+        Overrides OptionParser._process_args to exclusively handle default           
+        options and ignore args and other options.                                   
+                                                                                     
+        This overrides the behavior of the super class, which stop parsing           
+        at the first unrecognized option.                                            
+        """
+        while rargs:                                                                 
+            arg = rargs[0]                                                           
+            try:                                                                     
+                if arg[0:2] == "--" and len(arg) > 2:                                
+                    # process a single long option (possibly with value(s))          
+                    # the superclass code pops the arg off rargs                     
+                    self._process_long_opt(rargs, values)                            
+                elif arg[:1] == "-" and len(arg) > 1:                                
+                    # process a cluster of short options (possibly with              
+                    # value(s) for the last one only)                                
+                    # the superclass code pops the arg off rargs                     
+                    self._process_short_opts(rargs, values)                          
+                else:                                                                
+                    # it's either a non-default option or an arg                     
+                    # either way, add it to the args list so we can keep             
+                    # dealing with options                                           
+                    del rargs[0]                                                     
+                    raise Exception                                                  
+            except:                                                                  
+                largs.append(arg)
+
 class ManagementUtility(object):
     def __init__(self, argv = None):
         self.argv = argv or sys.argv[:]
@@ -60,7 +114,7 @@ class ManagementUtility(object):
 
     def execute(self):
 
-        parser = OptionParser(usage="%prog subcommand [options] [args]",
+        parser = LaxOptionParser(usage="%prog subcommand [options] [args]",
                                  option_list = BaseCommand.option_list)
         #TODO: Add input file options
         parser.add_option("-i","--input-file",

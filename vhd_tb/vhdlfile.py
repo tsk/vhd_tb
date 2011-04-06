@@ -17,51 +17,55 @@ class vhdlfile:
         r = re.compile(exp,re.S)
         ports = r.findall(l[0][1])
         #Find and remove commentes
-        exp = "--(.*?)\n"
-        r = re.compile(exp,re.S)
-        comments = r.findall(ports[0])
-        for comment in comments:
-            ports[0] = ports[0].replace("--"+comment,"")
-        ports = ports[0].replace("\n","")
-        ports = ports.replace("\t","")
-        ports = ports.strip()
-        ports = ports.lstrip("(")
-        ports = ports.split(";")
-        #Delete parasit ports
-        while '' in ports:
-            ports.remove('')
-        for port in ports:
-            #Get P rt Name
-            port = port.split(":")
-            Names = port[0].strip()
-            Names = Names.split(',')
-            #Get Port Size
-            exp ="\((.*?) downto (.*?)\)"
-            r = re.compile(exp, re.I)
-            size_ = r.findall(port[1])
-            if size_ != []:
-                size_ = int(size_[0][0])+1-int(size_[0][1])
-            else:
-                size_ = 1
-            #Get Port direction
-            if "out" in port[1]:
-                pdir = "out"
-            elif "in" in port[1]:
-                pdir = "in"
-            elif "inout" in port[1]:
-                pdir = "inout"
-            else:
-                pdir = "out"
-            #Get Port Type
-            if size_ > 1:
-                exp = pdir+"(.*?)\("
+        if ports == []:
+            self.__file_type = "VHDL Test Bench"
+        else:
+            self.__file_type = "VHDL Module"
+            exp = "--(.*?)\n"
+            r = re.compile(exp,re.S)
+            comments = r.findall(ports[0])
+            for comment in comments:
+                ports[0] = ports[0].replace("--"+comment,"")
+            ports = ports[0].replace("\n","")
+            ports = ports.replace("\t","")
+            ports = ports.strip()
+            ports = ports.lstrip("(")
+            ports = ports.split(";")
+            #Delete parasit ports
+            while '' in ports:
+                ports.remove('')
+            for port in ports:
+                #Get P rt Name
+                port = port.split(":")
+                Names = port[0].strip()
+                Names = Names.split(',')
+                #Get Port Size
+                exp ="\((.*?) downto (.*?)\)"
                 r = re.compile(exp, re.I)
-            else:
-                exp = pdir+"(.*)"
-                r = re.compile(exp, re.S)
-            type_ = r.findall(port[1])[0].strip()
-            for Name in Names:
-                self.__pdic[Name.strip()] =(type_,pdir,size_)
+                size_ = r.findall(port[1])
+                if size_ != []:
+                    size_ = int(size_[0][0])+1-int(size_[0][1])
+                else:
+                    size_ = 1
+                #Get Port direction
+                if "out" in port[1]:
+                    pdir = "out"
+                elif "in" in port[1]:
+                    pdir = "in"
+                elif "inout" in port[1]:
+                    pdir = "inout"
+                else:
+                    pdir = "out"
+                #Get Port Type
+                if size_ > 1:
+                    exp = pdir+"(.*?)\("
+                    r = re.compile(exp, re.I)
+                else:
+                    exp = pdir+"(.*)"
+                    r = re.compile(exp, re.S)
+                type_ = r.findall(port[1])[0].strip()
+                for Name in Names:
+                    self.__pdic[Name.strip()] =(type_,pdir,size_)
         #Get Declared modules
 	self.__smodules = [] 
 	exp = "component(.+?)is"
@@ -104,18 +108,25 @@ class vhdlfile:
             c+=");"
         return c
 
-    def gen_signals_code(self):
+    def gen_signals_code(self, initial_state_dic = None):
         l = len(self.__pdic)
         c=""
+        print initial_state_dic
         if l>0:
             for port in self.__pdic:
+                ival = ''
+                try:
+                    tv = initial_state_dic[port]
+                    ival = ":= "+tv
+                except:
+                    pass
                 data = self.__pdic[port]
                 size = data[2]
                 type_ = data[0]
                 ft = ''
                 if size > 1:
                     ft = "(%s downto 0)" % `size-1`
-                c+="signal %s: %s %s;\n" % (port,type_,ft)
+                c+="signal %s: %s %s %s;\n" % (port,type_,ft, ival )
         return c
 
     def gen_instance(self, iname):

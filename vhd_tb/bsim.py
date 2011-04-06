@@ -37,6 +37,20 @@ def run_ghdl_tb(tb,time):
     s1,s2 = s.communicate()
     return s2
 
+def check_ghdl_error(p):
+    error = False
+    if p != "":
+        exp = "(.*)error(.*)"
+        r = re.compile(exp,re.I)
+        errors = r.findall(p)
+        exp = "(.*)bound(.*)"
+        r = re.compile(exp,re.I)
+        not_bounds =r.findall(p)
+        if errors != [] or not_bounds != []:
+            error = True
+
+    return error
+
 if __name__ == "__main__":
     #Test code
     print "Importing vhdl Files"

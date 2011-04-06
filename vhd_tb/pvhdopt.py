@@ -2,8 +2,8 @@ import sys
 import os
 import vhdlfile
 import ooolib
-import getopt
 import re
+from optparse import make_option, OptionParser
 
 py_file = """
 """
@@ -48,6 +48,32 @@ begin
 end behave;
 """
 
+tb_file_manual = """
+library ieee;
+use ieee.std_logic_1164.all;
+library std;
+use std.textio.all;
+use ieee.numeric_std.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
+
+entity <Name> is
+
+end <Name>;
+
+architecture behave of <Name> is
+
+<component>
+
+<signals>
+
+begin
+<clock_gen>
+<instance>
+
+end behave;
+"""
+
 clkgt = """gen_clk_<clk>: process(<clk>)
 begin
     <clk> <= not <clk> after <PERIOD>/2;
@@ -76,7 +102,7 @@ def _xls_file(vhdl_file, recreate_file = False):
                 sheet.write(0,i,port+'('+`pdic[port][2]`+')')
                 i+=1
         #Get Vector Size
-        genclk,period = _get_genclk(clk_source)
+        genclk,period, clk_dic = _get_genclk(clk_source)
         vsize = 0
         for port in pdic:
             if pdic[port][1] in ("in","IN") and port not in clk_source:
@@ -85,7 +111,7 @@ def _xls_file(vhdl_file, recreate_file = False):
         tb_f = tb_f.replace("<max>",`vsize`)
         tb_f = tb_f.replace("<max-1>",`vsize-1`)
         component = vf.get_component_def()
-        signals = vf.gen_signals_code()
+        signals = vf.gen_signals_code(clk_dic)
         instance = vf.gen_instance("UTT0")
         tb_f = tb_f.replace("<component>",component)
         tb_f = tb_f.replace("<signals>",signals+period)
@@ -172,7 +198,7 @@ def _ods_file(vhdl_file, recreate_file = False):
                 doc.set_cell_value(i, 1, "string", port+'('+`pdic[port][2]`+')')
                 i+=1
         #Get Vector Size
-        genclk,period = _get_genclk(clk_source)
+        genclk,period, clk_dic = _get_genclk(clk_source)
         vsize = 0
         for port in pdic:
             if pdic[port][1] in ("in","IN") and port not in clk_source:
@@ -182,7 +208,7 @@ def _ods_file(vhdl_file, recreate_file = False):
         tb_f = tb_f.replace("<max>",`vsize`)
         tb_f = tb_f.replace("<max-1>",`vsize-1`)
         component = vf.get_component_def()
-        signals = vf.gen_signals_code()
+        signals = vf.gen_signals_code(clk_dic)
         instance = vf.gen_instance("UTT0")
         tb_f = tb_f.replace("<component>",component)
         tb_f = tb_f.replace("<signals>",signals+period)
@@ -303,6 +329,9 @@ def _python_script(vhdl_file, recreate_file = False):
         doc.save(tb_name+".ods")
         print "Edit the Test Bench Source File and re run this command"
 
+def _manual_tb(vhdlfile,replace):
+    pass
+
 def _get_clock_sources(buf, pdic):
     #TODO: Add 'event and ...
     exp = "[rising|falling]_edge\((.*?)\)"
@@ -314,13 +343,15 @@ def _get_clock_sources(buf, pdic):
 def _get_genclk(clk_source):
     genclk = ""
     period = "\n"
+    clk_dic = {}
     for clk in clk_source:
-        t = raw_input("Set PERIOD for "+clk+" :")
+        t = raw_input("Set PERIOD for "+clk+" ( 25 ns) :")
         period += "constant PERIOD_"+clk+" : time:= "+t+";\n"
         clk_c = clkgt.replace("<clk>",clk)
         clk_c = clk_c.replace("<PERIOD>","PERIOD_"+clk)
         genclk += clk_c
-    return genclk, period
+        clk_dic[clk] = raw_input("CLK initial state (0,1): ")
+    return genclk, period, clk_dic
 
 command_dic = {"xls": _xls_file,
                "ods": _ods_file,
@@ -336,22 +367,22 @@ command_dic = {"xls": _xls_file,
               }
 
 def project_options(argv):
-    Verbose = False
+    help = 'Test Bench Template Generator'
+    args = 'VHDL_File'
+    usage = '%s [options] %s' %(os.path.basename(argv[0]),args)
+    option_list = (
+        make_option('-f','--format',action='store',dest='tb_format',default='manual', help="xls,ods"),
+        make_option('-r','--recreate', action='store_true',dest='replace', default=False, help="Reload File"),
+        )
+    parser = OptionParser(prog = argv[0],usage=usage,option_list = option_list)
     try:
-        opts, args = getopt.getopt(argv, "i:f:r:o:",["file","format","recreate_file","signals_order"])
-    except getopt.GetoptError, err:
-        print str(err)
-    tb_i_format = 'ods'
-    replace = False
-    for o,a in opts:
-        if o in ("-i","--file"):
-            vhdl_file = a
-        if o in ("-f","--format"):
-            if a in command_dic:
-                tb_i_format = a
-            else:
-                print "Format not supported.\nAvailable formats: xdl, ods, manual and custom"
-                break;
-        if o in ("-r","--recreate_file"):
-            replace=True
-    command_dic[tb_i_format](vhdl_file,replace)
+        options, args = parser.parse_args(argv[1:])
+        opt = ''
+    except:
+        pass
+    if args == []:
+        opt = "--help"
+    if opt in ('--help','-h'):
+        parser.print_help()
+    else:
+        command_dic[options.tb_format](args[0],options.replace)
