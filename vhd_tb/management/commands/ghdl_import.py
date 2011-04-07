@@ -17,7 +17,19 @@ class Command(BaseCommand):
         pass
 
     def execute(self,args, options):
-        p = ghdl_import(options.unisim_dir,options.work_dir,options.source_dir)
+        try:
+            udir = options.unisim_dir
+        except:
+            udir = ""
+        try:
+            wdir = options.work_dir
+        except:
+            wdir = ""
+        try:
+            src = options.source_dir
+        except:
+            src = ""
+        p = ghdl_import(udir,wdir,src)
         return p
 
 if __name__ == "__main__":

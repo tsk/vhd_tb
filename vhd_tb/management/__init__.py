@@ -85,6 +85,31 @@ class LaxOptionParser(OptionParser):
             except:                                                                  
                 largs.append(arg)
 
+def call_command(subcommand, options):
+    try:
+        app_name = get_commands()[subcommand]
+    except KeyError:
+        sys.stderr.write("Unkown command: %r\nType '%s help' for usage.\n" % \
+                        (subcommand, self.prog_name))
+        sys.exit(1)
+    if isinstance(app_name, BaseCommand):
+        klass = app_name
+    else:
+        klass = load_command(app_name, subcommand)
+    print "running "+subcommand+" ..."
+    klass.execute(None,options)
+
+def parser_file(file_):
+    import inspect
+    modname = inspect.getmodulename(file_)
+    path = os.path.abspath(file_)
+    sys.path.append(os.path.dirname(path))
+    __import__(modname)
+    module = sys.modules[modname]
+    for action in module.actions:
+        call_command(action,module)
+    
+
 class ManagementUtility(object):
     def __init__(self, argv = None):
         self.argv = argv or sys.argv[:]
@@ -135,14 +160,20 @@ class ManagementUtility(object):
             if len(args) > 2:
                 self.fetch_command(args[2]).print_help(self.prog_name, args[2])
             else:
-                parser.print_help()
+                parser.print_lax_help()
                 sys.stderr.write(self.main_help_text()+'\n')
                 sys.exit(1)
         elif self.argv[1:] in (['--help'],['-h']):
             parser.print_lax_help()
             sys.stderr.write(self.main_help_text()+'\n')
-        elif self.argv[1] in (['--input-file'],['-i']):
-            print "iiii"
+        elif self.argv[1] in (['--input-file','-i']):
+            try:
+                opt = self.argv[2]
+            except IndexError:
+                parser.print_lax_help()
+                sys.stderr.write(self.main_help_text()+'\n')
+                sys.exit()
+            parser_file(self.argv[2])
         else:
             self.fetch_command(subcommand).run_from_argv(self.argv)
 

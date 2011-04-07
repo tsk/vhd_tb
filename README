@@ -1,8 +1,16 @@
 
-gentbf.py -i <vhdl_file>.vhd -f ods
+gentbf.py
+Usage: gentbf.py [options] VHDL_File
 
+Options:
+  -f TB_FORMAT, --format=TB_FORMAT
+                        xls,ods
+  -r, --recreate        Reload Files (xls or ods and tb)
+  -h, --help            show this help message and exit
+
+Output:
 tb_<vhdl_file>.vhd
-tb_<vhdl_file>.ods
+tb_<vhdl_file>.ods/xls
 
 Edit tb_<vhdl_file>.ods (or xls) and repeate the last command. Another file was created
 tb_<vhdl_file>.tbl
@@ -10,3 +18,62 @@ tb_<vhdl_file>.tbl
 isolate_vfile.py -i <vhdl_file> [-p path]
 
 copy the input file and its submodules to a new or a given path
+
+vhd-tb.py
+Usage: vhd-tb.py subcommand [options] [args]
+
+Options:
+  -h, --help            show this help message and exit
+  -i CONFIG, --input-file=CONFIG
+                        Command secuence taken from file
+
+Type 'vhd-tb.py help <subcommand>' for help on a specific subcommand.
+
+Available subcommmands:
+  ghdl_compile
+  ghdl_import
+  ghdl_run_tb
+
+$ vhd-tb.py help ghdl_compile
+Usage: vhd-tb.py ghdl_compile [options] Project
+
+Compiling and Elaborate simulation
+
+Options:
+  -w WORK_DIR, --work-dir=WORK_DIR
+  -u UNISIM_DIR, --unisim-dir=UNISIM_DIR
+  -h, --help            show this help message and exit
+$ vhd-tb.py help ghdl_import
+Usage: vhd-tb.py ghdl_import [options]
+
+Import VHD Files
+
+Options:
+  -s SOURCE_DIR, --source-dir=SOURCE_DIR
+  -w WORK_DIR, --work-dir=WORK_DIR
+  -u UNISIM_DIR, --unisim-dir=UNISIM_DIR
+  -h, --help            show this help message and exit
+
+example:
+
+$ vhd-tb.py ghdl_import -w work/
+$ vhd-tb.py ghdl_compile -w work/ tb_prueba
+analyze /home/alex/proyectos/vhdl/TestingGen/tb_prueba/tb_prueba.vhd
+analyze /home/alex/proyectos/vhdl/TestingGen/tb_prueba/prueba.vhd
+elaborate tb_prueba
+
+Secuences file example:
+
+conf.py----------
+work_dir='work'                                                                                                                                
+tb_name = 'tb_prueba'                                                                                                                          
+actions = ['ghdl_import','ghdl_compile'] 
+-----------------
+
+$ vhd-tb.py -i conf.py
+running ghdl_import ...
+running ghdl_compile ...
+analyze /home/alex/proyectos/vhdl/TestingGen/tb_prueba/tb_prueba.vhd
+analyze /home/alex/proyectos/vhdl/TestingGen/tb_prueba/prueba.vhd
+elaborate tb_prueba
+

@@ -25,5 +25,24 @@ class Command(BaseCommand):
             self.print_help(argv[0],argv[1])
             sys.exit(1)
     def execute(self,args, options):
-        p = ghdl_compile(args[0],options.unisim_dir,options.work_dir)
+        try:
+            udir = options.unisim_dir
+        except:
+            udir = ""
+        try:
+            wdir = options.work_dir
+        except:
+            wdir = ""
+        try:
+            src = options.source_dir
+        except:
+            src = ""
+        try:
+            arg = options.tb_name
+        except:
+            arg = args[0]
+        p = ghdl_compile(arg,udir,wdir)
+        if check_ghdl_error(p):
+            sys.stderr.write("  "+p)
+            sys.exit(1)
 	return p
