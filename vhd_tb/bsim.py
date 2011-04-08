@@ -31,8 +31,22 @@ def ghdl_check_syntax(file_,unisim_dir =""):
     s = subprocess.Popen("/usr/bin/ghdl -c --ieee=synopsys "+file_,shell=True)
     s.communicate()
 
-def run_ghdl_tb(tb,time):
-    cmd = tb+" --stop-time="+time+" --vcd="+tb+".vcd"
+def run_ghdl_tb(tb,time,wdir):
+    tb2 = os.path.basename(tb)
+    dir_ = os.path.dirname(tb)
+    if os.path.exists(tb) == False:
+        dir_ = wdir
+    cmd = os.path.join(dir_,tb2)+" --stop-time="+time+" --vcd="+os.path.join(dir_,tb2)+".vcd"
+    s = subprocess.Popen(cmd,shell=True, stderr = subprocess.PIPE)
+    s1,s2 = s.communicate()
+    return s2
+
+def gtkwave(tb,wdir):
+    tb2 = os.path.basename(tb)
+    dir_ = os.path.dirname(tb)
+    if os.path.exists(tb) == False:
+        dir_ = wdir
+    cmd = "gtkwave "+os.path.join(dir_,tb2)+".vcd "+os.path.join(dir_,tb2)+".trace"
     s = subprocess.Popen(cmd,shell=True, stderr = subprocess.PIPE)
     s1,s2 = s.communicate()
     return s2
@@ -48,7 +62,6 @@ def check_ghdl_error(p):
         not_bounds =r.findall(p)
         if errors != [] or not_bounds != []:
             error = True
-
     return error
 
 if __name__ == "__main__":

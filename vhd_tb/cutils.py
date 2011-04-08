@@ -32,3 +32,9 @@ def get_related_files(file, submodules, files_in_dir,dst):
 	if modname in submodules:
 	    shutil.copy(f,dst)
 	    get_related_files(f,fvhd.get_submodules(),files_in_dir,dst)
+
+def move_file(file_, dest):
+    if os.path.exists(file_):
+        if os.path.exists(dest):
+            shutil.copy(file_, dest)
+            os.remove(file_)

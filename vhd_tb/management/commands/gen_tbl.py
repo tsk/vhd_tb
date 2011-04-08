@@ -3,16 +3,15 @@ import sys
 import subprocess
 from optparse import make_option,OptionParser
 from vhd_tb.management.base import BaseCommand
-from vhd_tb.bsim import *
-from vhd_tb.cutils import move_file
+from vhd_tb import pvhdopt
 
 class Command(BaseCommand):
-    help = "Run TestBench"
-    args = "Project"
+    help = 'Test Bench Template Generator'
+    args = 'VHDL_File'
     option_list = (
-        make_option("-w","--work-dir",action='store', dest='work_dir',default=""),
-        make_option("-s","--stop-time", action='store', dest='stop_time',default="100ns"),
-    )
+        make_option('-f','--format',action='store',dest='tb_format',default='manual', help="xls,ods"),
+        make_option('-r','--recreate', action='store_true',dest='replace', default=False, help="Reload File"),
+        )
 
     def __init__(self):
         pass
@@ -25,22 +24,19 @@ class Command(BaseCommand):
         else:
             self.print_help(argv[0],argv[1])
             sys.exit(1)
+
     def execute(self,args, options):
         try:
-            wdir = options.work_dir
+            tb_format = options.tb_format
         except:
-            wdir = ""
+            tb_format = "manual"
         try:
-            arg = options.tb_name
+            replace = options.replace
+        except:
+            replace = False
+        try:
+            arg = options.filename
         except:
             arg = args[0]
-        try:
-            stime = options.stop_time
-        except:
-            stime = "100ns"
-        p = run_ghdl_tb(arg,stime,wdir)
-        print p
-        if check_ghdl_error(p):
-            sys.stderr.write("  "+p)
-            sys.exit(1)
-	return p
+        pvhdopt.command_dic[tb_format](arg,replace)
+	return None

@@ -19,20 +19,22 @@ isolate_vfile.py -i <vhdl_file> [-p path]
 
 copy the input file and its submodules to a new or a given path
 
-vhd-tb.py
+$ vhd-tb.py
 Usage: vhd-tb.py subcommand [options] [args]
 
 Options:
   -h, --help            show this help message and exit
   -i CONFIG, --input-file=CONFIG
-                        Command secuence taken from file
+                        Command secuence from file
 
 Type 'vhd-tb.py help <subcommand>' for help on a specific subcommand.
 
 Available subcommmands:
+  gen_tbl
   ghdl_compile
   ghdl_import
   ghdl_run_tb
+  gtkwave
 
 $ vhd-tb.py help ghdl_compile
 Usage: vhd-tb.py ghdl_compile [options] Project
@@ -76,4 +78,21 @@ running ghdl_compile ...
 analyze /home/alex/proyectos/vhdl/TestingGen/tb_prueba/tb_prueba.vhd
 analyze /home/alex/proyectos/vhdl/TestingGen/tb_prueba/prueba.vhd
 elaborate tb_prueba
+
+conf.py ------------
+work_dir='work'                                                                                                                                
+tb_name = 'tb_prueba'                                                                                                                          
+#Simulation params                                                                                                                             
+stop_time="1000ns"                                                                                                                             
+actions = ['ghdl_import','ghdl_compile','ghdl_run_tb','gtkwave']  
+--------------------
+
+vhd-tb.py -i conf.py
+running ghdl_import ...
+running ghdl_compile ...
+analyze /home/alex/proyectos/vhdl/TestingGen/tb_prueba/tb_prueba.vhd
+analyze /home/alex/proyectos/vhdl/TestingGen/tb_prueba/prueba.vhd
+elaborate tb_prueba
+running ghdl_run_tb ...
+running gtkwave ...
 
