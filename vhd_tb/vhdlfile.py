@@ -4,6 +4,7 @@ import re
 class vhdlfile:
     def __init__(self, Buffer):
         self.__pdic = {}
+        self.__clock_sources = []
         exp="[E|e][N|n][T|t][I|i][T|t][Y|y](.+?)[I|i][S|s]\n(.*?)[E|e][N|n][D|d](.*?);"
         r =re.compile(exp,re.S)
         l = r.findall(Buffer)
@@ -73,6 +74,12 @@ class vhdlfile:
 	l = r.findall(Buffer)
 	for module in l:
 	    self.__smodules.append(module.strip())
+        #Get clock sources
+        exp = "[rising|falling]_edge\((.*?)\)"
+        r = re.compile(exp,re.I)
+        clk_s = r.findall(Buffer)
+        self.__clock_sources = list(set(clk_s))
+        
 
     def get_name(self):
         return self.name_
@@ -85,6 +92,9 @@ class vhdlfile:
 
     def get_ports_dic(self):
         return self.__pdic
+
+    def get_clock_sources(self):
+        return self.__clock_sources
 
     def gen_ports_code(self):
         l = len(self.__pdic)
