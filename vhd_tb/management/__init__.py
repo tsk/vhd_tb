@@ -146,7 +146,7 @@ class ManagementUtility(object):
                           action="store",
                           dest="config",
                           default="",
-                          help="Command secuence from file")
+                          help="Command sequence from file")
         try:
             options, args = parser.parse_args(self.argv)
         except:

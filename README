@@ -25,7 +25,7 @@ Usage: vhd-tb.py subcommand [options] [args]
 Options:
   -h, --help            show this help message and exit
   -i CONFIG, --input-file=CONFIG
-                        Command secuence from file
+                        Command sequence from file
 
 Type 'vhd-tb.py help <subcommand>' for help on a specific subcommand.
 
@@ -64,7 +64,7 @@ analyze /home/alex/proyectos/vhdl/TestingGen/tb_prueba/tb_prueba.vhd
 analyze /home/alex/proyectos/vhdl/TestingGen/tb_prueba/prueba.vhd
 elaborate tb_prueba
 
-Secuences file example:
+Sequences file example:
 
 conf.py----------
 work_dir='work'                                                                                                                                
