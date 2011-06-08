@@ -16,7 +16,12 @@ def find_commands(management_dir):
         return []
 
 def load_command(app_name,name):
-    aname = '%s.management.commands.%s' % (app_name,name)
+    if app_name !='':
+        aname = '%s.management.commands.%s' % (app_name,name)
+    else:
+        cur_path = os.path.abspath(os.curdir)
+        sys.path.append(cur_path+"/commands")
+        aname ='%s' % name
     module = __import__(aname)
     components = aname.split('.')
     for comp in components[1:]:
@@ -27,8 +32,9 @@ def load_command(app_name,name):
 def get_commands():
     global _commands
     if _commands is None:
-        _commands = dict([(name,'vhd_tb') for name in find_commands(__path__[0])])
-
+        commands = dict([(name,'vhd_tb') for name in find_commands(__path__[0])])
+        app_commands = dict([(name,'') for name in find_commands("./")])
+        _commands = dict(commands,**app_commands)
     return _commands
 
 class LaxOptionParser(OptionParser):                                                 
@@ -184,3 +190,4 @@ def execute_from_command_line(argv=None):
 if __name__ == "__main__":
     p = find_commands("./")
     print p
+    get_commands()
