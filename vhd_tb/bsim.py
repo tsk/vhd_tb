@@ -10,9 +10,12 @@ def ghdl_import(unisim_dir = "", work_dir = "", sources_dir = ""):
     if work_dir != "":
         cmd+= " --workdir="+work_dir
     path = os.getcwd()
-    cmd+=" "+os.path.join(path,"*.vhd")
+    cmd+=" "+os.path.join(sources_dir,"*.vhd")
     s = subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
     s1,s2=s.communicate()
+    if s2 != '':
+        print s2
+        sys.exit(1)
     return s2
 
 def ghdl_compile(project, unisim_dir = "", work_dir = ""):

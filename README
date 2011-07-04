@@ -1,4 +1,12 @@
+Req:
+xlwt
+xlrd
+xutils
+openpyxl
 
+Now the workflow is a bit diferent, but is easier than before
+
+1. gentbf.py is not really needed in the new workflow
 gentbf.py
 Usage: gentbf.py [options] VHDL_File
 
@@ -15,9 +23,149 @@ tb_<vhdl_file>.ods/xls
 Edit tb_<vhdl_file>.ods (or xls) and repeate the last command. Another file was created
 tb_<vhdl_file>.tbl
 
+2. isolate_vfile.py
+
 isolate_vfile.py -i <vhdl_file> [-p path]
 
 copy the input file and its submodules to a new or a given path
+
+3.- vhd-tb.py. Added new command 'create_tb'
+$ vhd-tb.py
+Usage: vhd-tb.py subcommand [options] [args]
+
+Options:
+  -h, --help            show this help message and exit
+  -i CONFIG, --input-file=CONFIG
+                        Command sequence from file
+
+Type 'vhd-tb.py help <subcommand>' for help on a specific subcommand.
+
+Available subcommmands:
+  create_tb
+  gen_tbl
+  ghdl_compile
+  ghdl_import
+  ghdl_run_tb
+  gtkwave
+
+$ vhd-tb.py create_tb (experimental)
+Usage: /usr/local/bin/vhd-tb.py create_tb [options] VHDL_File
+
+Create a TestBench from vhdl file
+
+Options:
+  -f TB_FORMAT, --format=TB_FORMAT
+                        xlsx/ods/xls
+  -w WORK_DIR, --work-dir=WORK_DIR
+                        Work dir
+  -u UNISIM_DIR, --unisim-dir=UNISIM_DIR
+                        Unisim dir
+  -s STOP_TIME, --stop-time=STOP_TIME
+                        Default simulation stop time
+  -h, --help            show this help message and exit
+
+Note: xlsx not work at this time, maybe work if edit the xlsx file in M$ Excel
+
+ex.:
+
+I have
+
+$ ls
+src
+
+------src/doubleffd.vhd------
+library ieee;
+use ieee.std_logic_1164.all
+
+entity doubleffd is
+port(
+    D0,D1: in std_logic_vector(1 downto 0);
+    clk_0,clk_1: in std_logic;
+    Q0,Q1: out std_logic_vector(1 downto 0)
+);
+end entity;
+
+architecture behave of doubleffd is
+
+begin
+
+ffd0: process(clk_0)
+begin
+    if rising_edge(clk_0) then
+        Q0 <= D0;
+    end if;
+end process;
+
+ffd1: process(clk_1)
+begin
+    if rising_edge(clk_1) then
+        Q1 <= D1;
+    end if;
+end process;
+
+end behave;
+-----end file-----------
+
+vhd_tb.py create_tb
+
+In case we have an error:
+
+$ vhd-tb.py create_tb src/doubleffd.vhd -f xls -w Work -s 500ns
+subcommand ghdl_import
+running ghdl_import ...
+./src/doubleffd.vhd:4:1: ',' is expected instead of 'entity'
+/usr/lib/ghdl/bin/ghdl: importation has failed due to compilation error
+
+If not:
+
+$ vhd-tb.py create_tb src/doubleffd.vhd -f xls -w Work -s 500ns
+subcommand ghdl_import
+running ghdl_import ...
+
+There are 2 clock source.
+ Do you want ... tables for each source? (y/n): y
+Set PERIOD for clk_0 ( 25 ns ): 25 ns
+Set initial state for clk_0 (0/1) 0
+Set PERIOD for clk_0 TestBench process ( 25 ns ): 25 ns
+Select ports for clk_0 process
+available ports = ['D0', 'D1']
+Choice ports ( port1,port2,...) : D0
+Set PERIOD for clk_1 ( 25 ns ): 50 ns
+Set initial state for clk_1 (0/1) 0
+Set PERIOD for clk_1 TestBench process ( 25 ns ): 50 ns
+Select ports for clk_1 process
+available ports = ['D1']
+Choice ports ( port1,port2,...) : D1
+{'clk_0': '0', 'clk_1': '0'}
+subcommand ghdl_import
+running ghdl_import ...
+
+subcommand ghdl_compile
+running ghdl_compile ...
+analyze ./src/tb_doubleffd.vhd
+analyze ./src/doubleffd.vhd
+elaborate tb_doubleffd
+../../../src/synopsys/std_logic_arith.vhdl:391:14:warning: function "left_signed_arg" is never referenced
+../../../src/synopsys/std_logic_arith.vhdl:400:14:warning: function "left_unsigned_arg" is never referenced
+../../../src/synopsys/std_logic_arith.vhdl:409:14:warning: function "mult_signed_arg" is never referenced
+../../../src/synopsys/std_logic_arith.vhdl:418:14:warning: function "mult_unsigned_arg" is never referenced
+../../../src/synopsys/std_logic_arith.vhdl:1258:14:warning: function "unsigned_return_boolean" is never referenced
+../../../src/synopsys/std_logic_arith.vhdl:1266:14:warning: function "signed_return_boolean" is never referenced
+
+Edit tb_doubleffd.xls file in sources dir, after that run 'vhd_tb.py tb_doubleffd_xls' command
+
+Note: at this time only detect clk sources with rising/falling edge. I need to add clk events (TODO)
+What I get:
+
+$ ls
+commands  src  Work
+
+$ ls commands/
+tb_doubleffd_xls.py
+$ ls src/
+doubleffd.vhd  tb_doubleffd.vhd  tb_doubleffd.xls
+
+And a new command in vhd_tb.py
 
 $ vhd-tb.py
 Usage: vhd-tb.py subcommand [options] [args]
@@ -30,12 +178,162 @@ Options:
 Type 'vhd-tb.py help <subcommand>' for help on a specific subcommand.
 
 Available subcommmands:
+  create_tb
   gen_tbl
   ghdl_compile
   ghdl_import
   ghdl_run_tb
   gtkwave
+  tb_doubleffd_xls
 
+$ vhd-tb.py tb_doubleffd_xls -h
+Usage: /usr/local/bin/vhd-tb.py tb_doubleffd_xls [options] 
+
+Run TestBench for tb_doubleffd_xls
+
+Options:
+  -w WORK_DIR, --work-dir=WORK_DIR
+                        Work dir
+  -u UNISIM_DIR, --unisim-dir=UNISIM_DIR
+                        Unisim dir
+  -s STOP_TIME, --stop-time=STOP_TIME
+                        stop time e.g. 100ns
+  -h, --help            show this help message and exit
+
+Now, there are 3 posible actions, given by the TestBenchCommand:
+1.- When none of sources have changed (gen_tbl+ghdl_run_tb, gtkwave)
+2.- When ports no change but sources yes (gen_tbl, ghdl_import, ghdl_compile, ghdl_run_tb, gtkwave)
+3.- When ports have changed, create_tb command is called, but with the option add_sheet, when this option is present add a new sheet to the existing workbook
+
+Edit xls file
+
+$ gnumeric src/tb_doubleffd.xls
+
+If introduce an error:
+
+$ vhd-tb.py tb_doubleffd_xls
+subcommand ghdl_import
+running ghdl_import ...
+/usr/lib/ghdl/bin/ghdl:*command-line*: cannot open *.vhd
+
+If no error:
+$ vhd-tb.py tb_doubleffd_xls
+subcommand ghdl_run_tb
+running ghdl_run_tb ...
+Work/tb_doubleffd:info: simulation stopped by --stop-time
+
+subcommand gtkwave
+running gtkwave ...
+  
+GTKWave Analyzer v3.3.19 (w)1999-2011 BSI
+
+[0] start time.
+[500000000] end time.
+** WARNING: Error opening .sav file 'Work/tb_doubleffd.trace', skipping.
+
+-------src/tb_doubleffd.vhd-------
+library ieee;
+use ieee.std_logic_1164.all;
+library std;
+use std.textio.all;
+use ieee.numeric_std.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
+
+
+entity tb_doubleffd is
+
+end tb_doubleffd;
+
+architecture behave of tb_doubleffd is
+
+component doubleffd is
+port (
+	Q1: out std_logic_vector (1 downto 0);
+	Q0: out std_logic_vector (1 downto 0);
+	clk_0: in std_logic ;
+	clk_1: in std_logic ;
+	D0: in std_logic_vector (1 downto 0);
+	D1: in std_logic_vector (1 downto 0)
+);
+end component;
+
+
+signal Q1: std_logic_vector (1 downto 0) ;
+signal Q0: std_logic_vector (1 downto 0) ;
+signal clk_0: std_logic  := '1';
+signal clk_1: std_logic  := '1';
+signal D0: std_logic_vector (1 downto 0) ;
+signal D1: std_logic_vector (1 downto 0) ;
+constant clk_0_PERIOD : TIME := 25 ns;
+constant clk_1_PERIOD : TIME := 50 ns;
+
+file data_in_clk_0 : text open read_mode is "./src/tb_doubleffd_xls_clk_0.tbl";
+file data_in_clk_1 : text open read_mode is "./src/tb_doubleffd_xls_clk_1.tbl";
+
+
+begin
+
+gen_clk_clk_0: process(clk_0)
+begin
+    clk_0 <= not clk_0 after clk_0_PERIOD/2;
+end process;
+
+gen_clk_clk_1: process(clk_1)
+begin
+    clk_1 <= not clk_1 after clk_1_PERIOD/2;
+end process;
+
+
+
+UTT0:doubleffd
+port map(
+	Q1 => Q1,
+	Q0 => Q0,
+	clk_0 => clk_0,
+	clk_1 => clk_1,
+	D0 => D0,
+	D1 => D1
+);
+
+clk_0_process: process
+    variable data_line : line;
+    variable data_int : integer;
+    variable data_s : std_logic_vector(1 downto 0);
+    begin
+      while not endfile(data_in_clk_0) loop
+        readline(data_in_clk_0,data_line);
+        read(data_line, data_int);
+        data_s := std_logic_vector(to_unsigned(data_int,2));
+	D0 <=data_s(1 downto 0);
+
+        wait for 25 ns;
+      end loop;
+      wait;
+  end process;
+
+clk_1_process: process
+    variable data_line : line;
+    variable data_int : integer;
+    variable data_s : std_logic_vector(1 downto 0);
+    begin
+      while not endfile(data_in_clk_1) loop
+        readline(data_in_clk_1,data_line);
+        read(data_line, data_int);
+        data_s := std_logic_vector(to_unsigned(data_int,2));
+	D1 <=data_s(1 downto 0);
+
+        wait for 50 ns;
+      end loop;
+      wait;
+  end process;
+
+
+
+end behave;
+----endfile----------------------------
+
+__________________________________________________________________
 $ vhd-tb.py help ghdl_compile
 Usage: vhd-tb.py ghdl_compile [options] Project
 

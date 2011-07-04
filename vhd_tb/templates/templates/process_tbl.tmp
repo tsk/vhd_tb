@@ -1,0 +1,15 @@
+<process_name>: process
+    variable data_line : line;
+    variable data_int : integer;
+    variable data_s : std_logic_vector(<max-1> downto 0);
+    begin
+      while not endfile(<file_var_name>) loop
+        readline(<file_var_name>,data_line);
+        read(data_line, data_int);
+        data_s := std_logic_vector(to_unsigned(data_int,<max>));
+<data>
+        wait for <PERIOD>;
+      end loop;
+      wait;
+  end process;
+

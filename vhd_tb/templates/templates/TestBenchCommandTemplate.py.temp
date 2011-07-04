@@ -1,0 +1,24 @@
+import os
+import sys
+from vhd_tb.stimuli import *
+from vhd_tb.vhd import TestBenchCommand
+from vhd_tb.cutils import compress, decompress
+
+TestBenchConfig = {
+<config>
+}
+TestBenchSrcControl = {
+<source_control>
+}
+
+class Command(TestBenchCommand):
+    help = "Run TestBench for <tb_name>_<stimuli_source>"
+    args = ""
+    file_ = os.path.abspath(__file__)
+    TBConfig = TestBenchConfig
+    TBSrcControl = TestBenchSrcControl
+    source_dir = TBConfig['source_dir']
+    file_name = TBConfig['file_name']
+    tb_name = TBConfig['tb_name']
+    stm_in_file = '%s.%s'%(tb_name,'<stimuli_source>')
+    stimuli_source = <stimuli_source>_source(source_dir,file_name,stm_in_file)

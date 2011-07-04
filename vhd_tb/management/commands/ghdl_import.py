@@ -29,10 +29,8 @@ class Command(BaseCommand):
             src = options.source_dir
         except:
             src = ""
+
         p = ghdl_import(udir,wdir,src)
+        print p
         return p
 
-if __name__ == "__main__":
-    p = Command()
-    args = sys.argv[:]
-    p.run_from_argv(args)

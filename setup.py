@@ -22,7 +22,7 @@ for scheme in INSTALL_SCHEMES.values():
     scheme['data'] = scheme['purelib']
 
 setup(name="vhd_tb",
-      version="0.1",
+      version="0.2",
       description = "Create Templates for TestBench",
       author ="Alejandro Armagnac",
       author_email = "aarmagnac@yahoo.com.mx",

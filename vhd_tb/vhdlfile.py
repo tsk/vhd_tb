@@ -1,22 +1,28 @@
 import os
 import re
+import hashlib
 
 class vhdlfile:
     def __init__(self, Buffer):
         self.__pdic = {}
         self.__clock_sources = []
-        exp="[E|e][N|n][T|t][I|i][T|t][Y|y](.+?)[I|i][S|s]\n(.*?)[E|e][N|n][D|d](.*?);"
-        r =re.compile(exp,re.S)
+        self.__hash = hashlib.sha1(Buffer).hexdigest()
+        self.headers = Buffer[0:Buffer.lower().find("entity")].strip().split("\n")
+        exp="entity(.+?)is\n(.*?)end(.*?);"
+        r =re.compile(exp,re.S| re.I)
         l = r.findall(Buffer)
         #Getting Module Name
         self.name_ = l[0][0].strip()
         #Getting Generics
+        #TODO: Add support to generics
         exp = "generic(.*?);"
         r = re.compile(exp, re.I)
         generics = r.findall(l[0][1])
-        exp = "[P|p][O|o][R|r][T|t](.*)[)];"
-        r = re.compile(exp,re.S)
+        exp = "port(.*)[)];"
+        r = re.compile(exp,re.S| re.I)
         ports = r.findall(l[0][1])
+        self.__ports_hash = hashlib.sha1(l[0][1]).hexdigest()
+        self.__ports_ind_hash = {}
         #Find and remove commentes
         if ports == []:
             self.__file_type = "VHDL Test Bench"
@@ -36,7 +42,7 @@ class vhdlfile:
             while '' in ports:
                 ports.remove('')
             for port in ports:
-                #Get P rt Name
+                #Get Port Name
                 port = port.split(":")
                 Names = port[0].strip()
                 Names = Names.split(',')
@@ -67,6 +73,8 @@ class vhdlfile:
                 type_ = r.findall(port[1])[0].strip()
                 for Name in Names:
                     self.__pdic[Name.strip()] =(type_,pdir,size_)
+                    temp = "[%s,%s,%s]"%(type_,pdir,size_)
+                    self.__ports_ind_hash[Name.strip()]=hashlib.sha1(temp).hexdigest()
         #Get Declared modules
 	self.__smodules = [] 
 	exp = "component(.+?)is"
@@ -125,14 +133,18 @@ class vhdlfile:
         if l>0:
             for port in self.__pdic:
                 ival = ''
-                try:
-                    tv = initial_state_dic[port]
-                    ival = ":= "+tv
-                except:
-                    pass
                 data = self.__pdic[port]
                 size = data[2]
                 type_ = data[0]
+                try:
+                    tv = initial_state_dic[port]
+                    ft = '\''
+                    if size > 1:
+                        ft = '"'
+                    itempval = '{0:0>{1}}'.format(tv,size)
+                    ival = ":= %s%s%s"%(ft,itempval,ft)
+                except:
+                    pass
                 ft = ''
                 if size > 1:
                     ft = "(%s downto 0)" % `size-1`
@@ -153,4 +165,26 @@ class vhdlfile:
         return c
 
     def get_submodules(self):
-        return self.__smodules	
+        return self.__smodules
+
+    def get_hashes(self):
+        return self.__hash,self.__ports_hash, self.__ports_ind_hash
+
+    def get_input_ports_list(self):
+        input_ports = []
+        for port in self.__pdic:
+            if self.__pdic[port][1] in ("in","IN") and port not in self.__clock_sources:
+                input_ports.append(port)
+
+        return input_ports
+
+if __name__ == "__main__":
+    f = open('vhd/wbDH13.vhd')
+    buf = f.read()
+    f.close()
+    vhd = vhdlfile(buf)
+    print vhd.get_name()
+    print vhd.get_submodules()
+    print vhd.gen_instance('algo')
+    print vhd.get_ports_dic()
+    print vhd.return_conf()

@@ -92,6 +92,7 @@ class LaxOptionParser(OptionParser):
                 largs.append(arg)
 
 def call_command(subcommand, options):
+    print "subcommand %s"%subcommand
     try:
         app_name = get_commands()[subcommand]
     except KeyError:
