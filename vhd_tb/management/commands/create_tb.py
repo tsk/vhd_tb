@@ -168,7 +168,6 @@ class Command(BaseCommand):
         gconfig = tb_config(vf.get_input_ports_list(),vf.get_clock_sources())
         tb_name = 'tb_%s'%vf.get_name().lower()
         command_name = "%s_%s.py"%(tb_name,options.tb_format)
-        gz_f = compress(args[0])
 
         sconfig = set_config(file_name,tb_name,
                             gconfig,vf,
@@ -178,7 +177,7 @@ class Command(BaseCommand):
                             options.stop_time
                             )
         hashes = vf.get_hashes()
-        deepfiles_hash = get_related_files_hashes(args[0])
+        deepfiles_hash = get_related_files_hashes(fivhd)
         source_control = set_source_control(hashes[0],hashes[1],hashes[2],deepfiles_hash)
         cmd_file = command_tb_file(tb_name,sconfig,source_control,options.tb_format)
         f = open(command_dir+'/'+command_name,'w')
@@ -199,7 +198,7 @@ class Command(BaseCommand):
         if flag_add_sheet == False:
             doc.create(gconfig['tables'],vf.get_ports_dic())
         else:
-            doc.add_sheet(prefix, gconfig['tables'], vf.get_ports_dic())
+            doc.add_sheet(options.prefix, gconfig['tables'], vf.get_ports_dic())
 
         opt.set_attrib('tb_name',tb_name)
         call_command('ghdl_import',opt)
