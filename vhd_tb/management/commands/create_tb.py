@@ -153,7 +153,6 @@ class Command(BaseCommand):
         opt.set_attrib('unisim_dir',options.unisim_dir)
         opt.set_attrib('source_dir',source_dir)
 
-        call_command('ghdl_import',opt)
         f = open(fivhd,'r')
         buf = f.read()
         f.close()
@@ -163,6 +162,7 @@ class Command(BaseCommand):
         if options.work_dir != "":
             if os.path.exists(options.work_dir) == False:
                 os.mkdir(options.work_dir)
+        call_command('ghdl_import',opt)
         #Create vhd TestBenchCommand
         vf = vhdlfile.vhdlfile(buf)
         gconfig = tb_config(vf.get_input_ports_list(),vf.get_clock_sources())
