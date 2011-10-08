@@ -58,8 +58,8 @@ def get_related_files_hashes(file, fdic = {} , files_in_dir=[], submodules = [])
         fvhd = vhdlfile.vhdlfile(fb)
         modname = fvhd.get_name()
         if modname in submodules:
-            fdic[`os.path.basename(f)`] = hahs_
-            fdic = get_related_fules_hashes(f,fdic,files_in_dir,
+            fdic[`os.path.basename(f)`] = hash_
+            fdic = get_related_files_hashes(f,fdic,files_in_dir,
                                             fvhd.get_submodules())
 
     return fdic
@@ -167,6 +167,18 @@ def tb_config(ports, clk_source = []):
     if clk_source == []:
         flag = False
         while flag == False:
+            print('No clock source detected')
+            resp = raw_input('Do you want to select a clock source (y/n):')
+            if resp in ['y','Y','n','N']:
+                flag = True
+    if resp in ['y','Y']:
+        print('Available Ports:\n%s'%ports)
+        new_clock_sources = raw_input('Select your clock(s) source(s) separated by , (clk1,clk2):\n')
+        for clocks in new_clock_sources.split(','):
+            clk_source.append(clocks.strip())
+    if clk_source == []:
+        flag = False
+        while flag == False:
             tb_period = raw_input("Set PERIOD for TestBench process ( 25 ns ): ")
             flag = isPeriod(tb_period)
         gconfig['tb_period']['tb'] = tb_period
@@ -244,6 +256,13 @@ def tb_config(ports, clk_source = []):
                     gconfig['tables'][clk] = selected_ports
                 flag = True
     return gconfig
+
+def input_formats():
+    in_formats = {'xls':'tbl',
+                 'xlsx':'tbl',
+                 'ods':'tbl',
+                }
+    return in_formats
 
 if __name__ == "__main__":
    tb_config(['a','b','c'],['clk0','clk1'])

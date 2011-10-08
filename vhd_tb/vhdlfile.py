@@ -8,7 +8,8 @@ class vhdlfile:
         self.__clock_sources = []
         self.__hash = hashlib.sha1(Buffer).hexdigest()
         self.headers = Buffer[0:Buffer.lower().find("entity")].strip().split("\n")
-        exp="entity(.+?)is\n(.*?)end(.*?);"
+        #exp="entity(.+?)is\n(.?)end(.+?);"
+        exp = "\nentity(.*?)is(.*?)end(.*?);"
         r =re.compile(exp,re.S| re.I)
         l = r.findall(Buffer)
         #Getting Module Name

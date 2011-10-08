@@ -47,17 +47,19 @@ def return_process_tbl(gconfig,pdic, temp_buf, stimuli_f, tb_name,source_dir, fo
 input_formats = {'xls':'tbl',
                  'xlsx':'tbl',
                  'ods':'tbl',
+                 'manual':'single'
                 }
 
 input_format_module = {'xls':'vhd_tb.sheets',
                          'xlsx':'vhd_tb.sheets',
                          'ods':'vhd_tb.sheets',
+
                         }
 
 process = {'tbl': [Template(templates_dir+'/process_tbl.tmp').return_temp_buf(),
                    return_process_tbl,
                    'file <name> : text open read_mode is \"<file_name>\";\n'],
-           'normal': '<process_name>:process\n<data>',
+           'single': '<process_name>:process\n<data>',
           }
 
 input_formats_h = '/'.join(input_formats)
