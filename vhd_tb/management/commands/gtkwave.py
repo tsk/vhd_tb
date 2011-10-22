@@ -33,8 +33,4 @@ class Command(BaseCommand):
             arg = options.tb_name
         except:
             arg = args[0]
-        p = gtkwave(arg,wdir)
-        if check_ghdl_error(p):
-            sys.stderr.write("  "+p)
-            sys.exit(1)
-	return p
+        gtkwave(arg,wdir)

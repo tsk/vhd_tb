@@ -6,6 +6,9 @@ from vhd_tb import vhdlfile
 from vhd_tb.cutils import *
 from vhd_tb.templates import templates_dir, TemplateBuf, tb_conf_str, tb_source_control
 from vhd_tb.templates import Template, clkgt, vhdl_headers, set_source_control, set_config
+from vhd_tb.management import call_command        
+from vhd_tb.vhd import tb_options
+import shutil
 
 def return_process_tbl(gconfig,pdic, temp_buf, stimuli_f, tb_name,source_dir, format_type):
     tables = gconfig['tables']
@@ -19,7 +22,7 @@ def return_process_tbl(gconfig,pdic, temp_buf, stimuli_f, tb_name,source_dir, fo
         vector_conf = get_vector_conf(ports,pdic)
         max_size = vector_conf[2]
         file_var_name = 'data_in_%s'%table
-        tbl_file = '%s_%s_%s.tbl'%(tb_name,format_type,table)
+        tbl_file = '%s_%s_%s.tbl'%(tb_name.lower(),format_type,table)
         data = ""
         for port in ports:
             (msb,lsb) = vector_conf[1][port]
@@ -41,7 +44,6 @@ def return_process_tbl(gconfig,pdic, temp_buf, stimuli_f, tb_name,source_dir, fo
         stemplate.set_property_value('name',file_var_name)
         stemplate.set_property_value('file_name',source_dir+'/'+tbl_file)
         stimuli_data += stemplate.return_temp_buf()
-
     return process_data,stimuli_data
 
 input_formats = {'xls':'tbl',
@@ -51,9 +53,8 @@ input_formats = {'xls':'tbl',
                 }
 
 input_format_module = {'xls':'vhd_tb.sheets',
-                         'xlsx':'vhd_tb.sheets',
-                         'ods':'vhd_tb.sheets',
-
+                        'xlsx':'vhd_tb.sheets',
+                        'ods':'vhd_tb.sheets',
                         }
 
 process = {'tbl': [Template(templates_dir+'/process_tbl.tmp').return_temp_buf(),
@@ -139,22 +140,15 @@ class Command(BaseCommand):
 
     def execute(self, args, options):
         try:
-            flag_add_sheet = options.add_sheet
+            #flag_add_sheet = options.add_sheet
             file_name = options.file_name
             source_dir = options.source_dir
             fivhd = '/'.join([source_dir,file_name])
         except:
-            flag_add_sheet = False
+            #flag_add_sheet = False
             file_name = os.path.basename(args[0])
             source_dir = './'+os.path.dirname(args[0])
             fivhd = args[0]
-        from vhd_tb.management import call_command        
-        from vhd_tb.vhd import tb_options
-        opt = tb_options()
-        opt.set_attrib('work_dir',options.work_dir)
-        opt.set_attrib('unisim_dir',options.unisim_dir)
-        opt.set_attrib('source_dir',source_dir)
-
         f = open(fivhd,'r')
         buf = f.read()
         f.close()
@@ -164,6 +158,12 @@ class Command(BaseCommand):
         if options.work_dir != "":
             if os.path.exists(options.work_dir) == False:
                 os.mkdir(options.work_dir)
+
+        opt = tb_options()
+        opt.set_attrib('work_dir',options.work_dir)
+        opt.set_attrib('unisim_dir',options.unisim_dir)
+        opt.set_attrib('source_dir',source_dir)
+
         call_command('ghdl_import',opt)
         #Create vhd TestBenchCommand
         vf = vhdlfile.vhdlfile(buf)
@@ -191,7 +191,21 @@ class Command(BaseCommand):
         f.write(vhd_tb)
         f.close()
         pymodname = input_format_module[options.tb_format]
+        stimuli_from_source(pymodname, gconfig,vf,options, source_dir, tb_name)
+
+def stimuli_from_source(pymodname,gconfig,vf, options,source_dir,tb_name):
         #Create stimuli source file
+        try:
+            flag_add_sheet = options.add_sheet
+        except:
+            flag_add_sheet = False
+        from vhd_tb.vhd import tb_options
+
+        opt = tb_options()
+        opt.set_attrib('work_dir',options.work_dir)
+        opt.set_attrib('unisim_dir',options.unisim_dir)
+        opt.set_attrib('source_dir',source_dir)
+
         module = __import__(pymodname)
         components = pymodname.split('.')
         for comp in components[1:]:

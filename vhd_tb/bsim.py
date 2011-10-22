@@ -26,6 +26,7 @@ def ghdl_compile(project, unisim_dir = "", work_dir = ""):
     s = subprocess.Popen("ghdl -m --ieee=synopsys "+unisim_dir+" "+work_dir+" "+project,
                         shell=True, stderr = subprocess.PIPE)
     s1,s2=s.communicate()
+
     return s2
 
 def ghdl_check_syntax(file_,unisim_dir =""):
@@ -40,9 +41,22 @@ def run_ghdl_tb(tb,time,wdir):
     if os.path.exists(tb) == False:
         dir_ = wdir
     cmd = os.path.join(dir_,tb2)+" --stop-time="+time+" --vcd="+os.path.join(dir_,tb2)+".vcd"
-    s = subprocess.Popen(cmd,shell=True, stderr = subprocess.PIPE)
-    s1,s2 = s.communicate()
-    return s2
+    s = subprocess.Popen(cmd,shell=True, stdout = subprocess.PIPE)
+    #s1,s2 = s.communicate()
+    errors = 0
+    while True:
+        fc = s.stdout.readline()
+        if fc == '' and s.poll() != None:
+            break;
+        if check_error(fc) == True:
+            errors += 1
+        sys.stdout.write(fc)
+        sys.stdout.flush()    
+    
+    if errors > 0:
+        print('Stoping process due errors. Total errors %s'%errors)
+        sys.exit(1)
+    #return s2
 
 def gtkwave(tb,wdir):
     tb2 = os.path.basename(tb)
@@ -50,9 +64,24 @@ def gtkwave(tb,wdir):
     if os.path.exists(tb) == False:
         dir_ = wdir
     cmd = "gtkwave "+os.path.join(dir_,tb2)+".vcd "+os.path.join(dir_,tb2)+".trace"
-    s = subprocess.Popen(cmd,shell=True, stderr = subprocess.PIPE)
-    s1,s2 = s.communicate()
-    return s2
+    s = subprocess.Popen(cmd,shell=True, stdout = subprocess.PIPE)
+    errors = 0
+    while True:
+        fc = s.stdout.readline()
+        if fc == '' and s.poll() != None:
+            break;
+        if check_error(fc) == True:
+            errors += 1
+        sys.stdout.write(fc)
+        sys.stdout.flush()
+
+def check_error(p):
+    error = False
+    if 'error' in p:
+        error = True
+    elif 'bound' in p:
+        error =True
+    return error
 
 def check_ghdl_error(p):
     error = False

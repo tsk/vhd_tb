@@ -174,8 +174,9 @@ def tb_config(ports, clk_source = []):
     if resp in ['y','Y']:
         print('Available Ports:\n%s'%ports)
         new_clock_sources = raw_input('Select your clock(s) source(s) separated by , (clk1,clk2):\n')
-        for clocks in new_clock_sources.split(','):
-            clk_source.append(clocks.strip())
+        for clock in new_clock_sources.split(','):
+            clk_source.append(clock.strip())
+            ports.remove(clock)
     if clk_source == []:
         flag = False
         while flag == False:

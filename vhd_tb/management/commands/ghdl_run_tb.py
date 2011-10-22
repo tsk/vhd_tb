@@ -38,9 +38,8 @@ class Command(BaseCommand):
             stime = options.stop_time
         except:
             stime = "100ns"
-        p = run_ghdl_tb(arg,stime,wdir)
-        print p
-        if check_ghdl_error(p):
-            sys.stderr.write("  "+p)
-            sys.exit(1)
-	return p
+        run_ghdl_tb(arg,stime,wdir)
+        #if check_ghdl_error(p):
+        #    sys.stderr.write("  "+p)
+        #    sys.exit(1)
+	#return p

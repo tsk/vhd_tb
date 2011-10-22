@@ -42,11 +42,6 @@ class Command(BaseCommand):
             arg = options.tb_name
         except:
             arg = args[0]
-        p = ghdl_compile(arg,udir,wdir)
-        print p
-        if check_ghdl_error(p):
-            sys.stderr.write("  "+p)
-            sys.exit(1)
+        ghdl_compile(arg,udir,wdir)
         if wdir != "":
             move_file(arg.lower(),wdir)
-	return p
