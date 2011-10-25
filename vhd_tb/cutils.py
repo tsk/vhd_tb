@@ -171,12 +171,12 @@ def tb_config(ports, clk_source = []):
             resp = raw_input('Do you want to select a clock source (y/n):')
             if resp in ['y','Y','n','N']:
                 flag = True
-    if resp in ['y','Y']:
-        print('Available Ports:\n%s'%ports)
-        new_clock_sources = raw_input('Select your clock(s) source(s) separated by , (clk1,clk2):\n')
-        for clock in new_clock_sources.split(','):
-            clk_source.append(clock.strip())
-            ports.remove(clock)
+        if resp in ['y','Y']:
+            print('Available Ports:\n%s'%ports)
+            new_clock_sources = raw_input('Select your clock(s) source(s) separated by , (clk1,clk2):\n')
+            for clock in new_clock_sources.split(','):
+                clk_source.append(clock.strip())
+                ports.remove(clock)
     if clk_source == []:
         flag = False
         while flag == False:
