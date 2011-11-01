@@ -37,9 +37,9 @@ def ghdl_check_syntax(file_,unisim_dir =""):
 
 def run_ghdl_tb(tb,time,wdir):
     tb2 = os.path.basename(tb)
-    dir_ = os.path.dirname(tb)
-    if os.path.exists(tb) == False:
-        dir_ = wdir
+    dir_ = wdir
+    if os.path.exists(wdir) == False or wdir == '':
+        dir_ = os.path.dirname(os.path.abspath(tb))
     cmd = os.path.join(dir_,tb2)+" --stop-time="+time+" --vcd="+os.path.join(dir_,tb2)+".vcd"
     s = subprocess.Popen(cmd,shell=True, stdout = subprocess.PIPE)
     #s1,s2 = s.communicate()

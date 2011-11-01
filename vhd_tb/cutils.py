@@ -42,8 +42,9 @@ def get_related_files_hashes(file, fdic = {} , files_in_dir=[], submodules = [])
             dname = os.path.dirname(abspath)
             for f in os.listdir(dname):
                 if os.path.isfile(os.path.join(dname,f)):
-                    if f.split(".")[1] in ("vhdl","VHDL","vhd","VHD"):
-                        files_in_dir.append(os.path.join(dname,f))
+                    if len(f.split(".")) > 1:
+                        if f.split(".")[1] in ("vhdl","VHDL","vhd","VHD"):
+                            files_in_dir.append(os.path.join(dname,f))
         fi = open(file)
         fb = fi.read()
         fi.close()
@@ -176,7 +177,7 @@ def tb_config(ports, clk_source = []):
             new_clock_sources = raw_input('Select your clock(s) source(s) separated by , (clk1,clk2):\n')
             for clock in new_clock_sources.split(','):
                 clk_source.append(clock.strip())
-                ports.remove(clock)
+                ports.remove(clock.strip())
     if clk_source == []:
         flag = False
         while flag == False:

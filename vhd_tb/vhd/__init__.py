@@ -99,7 +99,7 @@ class TestBenchCommand(BaseCommand):
                'ports_change': ['create_tb'],
               }
     pre_actions = {'no_change' : ['gen_tbl'],
-                   'source_change' : ['replace_TBSrcConfig','gen_tbl'],
+                   'source_change' : ['replace_TBSrcControl','gen_tbl'],
                    'ports_change': [],
                   }
     tb_options_list = ['tb_name','source_dir','work_dir',
