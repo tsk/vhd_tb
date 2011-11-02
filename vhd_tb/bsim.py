@@ -25,9 +25,21 @@ def ghdl_compile(project, unisim_dir = "", work_dir = ""):
         work_dir = "--workdir="+work_dir
     s = subprocess.Popen("ghdl -m --ieee=synopsys "+unisim_dir+" "+work_dir+" "+project,
                         shell=True, stderr = subprocess.PIPE)
-    s1,s2=s.communicate()
+    #s1,s2=s.communicate()
+    errors = 0
+    while True:
+        fc = s.stdout.readline()
+        if fc == '' and s.poll() != None:
+            break;
+        if check_error(fc) == True:
+            errors += 1
+        sys.stdout.write(fc)
+        sys.stdout.flush()    
+    
+    if errors > 0:
+        print('Stoping process due errors. Total errors %s'%errors)
+        sys.exit(1)
 
-    return s2
 
 def ghdl_check_syntax(file_,unisim_dir =""):
     if unisim_dir != "":
@@ -37,7 +49,7 @@ def ghdl_check_syntax(file_,unisim_dir =""):
 
 def run_ghdl_tb(tb,time,wdir):
     tb2 = os.path.basename(tb)
-    dir_ = wdir
+    dir_ = os.path.abspath(wdir)
     if os.path.exists(wdir) == False or wdir == '':
         dir_ = os.path.dirname(os.path.abspath(tb))
     cmd = os.path.join(dir_,tb2)+" --stop-time="+time+" --vcd="+os.path.join(dir_,tb2)+".vcd"
@@ -81,6 +93,8 @@ def check_error(p):
         error = True
     elif 'bound' in p:
         error =True
+    elif 'no declaration for' in p:
+        error = True
     return error
 
 def check_ghdl_error(p):
