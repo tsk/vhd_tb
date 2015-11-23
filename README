@@ -200,7 +200,7 @@ Options:
                         stop time e.g. 100ns
   -h, --help            show this help message and exit
 
-Now, there are 3 posible actions, given by the TestBenchCommand:
+Now, there are 3 possible actions, given by the TestBenchCommand:
 1.- When none of sources have changed (gen_tbl+ghdl_run_tb, gtkwave)
 2.- When ports no change but sources yes (gen_tbl, ghdl_import, ghdl_compile, ghdl_run_tb, gtkwave)
 3.- When ports have changed, create_tb command is called, but with the option add_sheet, when this option is present add a new sheet to the existing workbook
